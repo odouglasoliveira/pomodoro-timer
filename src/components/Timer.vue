@@ -1,47 +1,52 @@
 <script setup>
-import { ref, computed, watch, onBeforeUnmount, onMounted } from 'vue'
+import { ref, computed, watch, onBeforeUnmount, onMounted } from "vue";
 
-import skip from '/skip-svgrepo-com.svg'
-import tickingClock from '../audio/ticking-clock.mp3'
+import skip from "/skip-svgrepo-com.svg";
+import tickingClock from "../audio/ticking-clock.mp3";
+import bell from "../audio/bell.mp3";
 
 const time = ref(25 * 60);
 const isRunning = ref(false);
-const currentMode = ref('pomodoro');
+const currentMode = ref("pomodoro");
 
 let audioContext = null;
 let audioBuffer = null;
-const overlapTime = 0.1;
+const overlapTime = 0.05;
 let nextStartTime = 0;
+const endAudio = new Audio(bell);
+endAudio.volume = 0.2;
 
 const loadAudio = async () => {
   if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
   }
   const response = await fetch(tickingClock);
   const arrayBuffer = await response.arrayBuffer();
   audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-}
+};
 
 const startAudio = () => {
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  if (currentMode.value !== "descanso") {
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    nextStartTime = audioContext.currentTime;
+
+    const scheduleNext = () => {
+      if (!isRunning.value) return;
+
+      const source = audioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(audioContext.destination);
+
+      source.start(nextStartTime);
+      nextStartTime += audioBuffer.duration - overlapTime;
+
+      setTimeout(scheduleNext, (audioBuffer.duration - overlapTime) * 1000);
+    };
+
+    scheduleNext();
   }
-  nextStartTime = audioContext.currentTime;
-
-  const scheduleNext = () => {
-    if (!isRunning.value) return;
-
-    const source = audioContext.createBufferSource();
-    source.buffer = audioBuffer;
-    source.connect(audioContext.destination);
-
-    source.start(nextStartTime);
-    nextStartTime += audioBuffer.duration - overlapTime;
-
-    setTimeout(scheduleNext, (audioBuffer.duration - overlapTime) * 1000);
-  };
-
-  scheduleNext();
 };
 
 const stopAudio = () => {
@@ -54,10 +59,12 @@ const stopAudio = () => {
 let interval = null;
 
 const formattedTime = computed(() => {
-  const minutes = Math.floor(time.value / 60).toString().padStart(2, '0');
-  const seconds = (time.value % 60).toString().padStart(2, '0');
-  return `${minutes}:${seconds}`
-})
+  const minutes = Math.floor(time.value / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (time.value % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+});
 
 const toggleTimer = () => {
   if (isRunning.value) {
@@ -65,7 +72,7 @@ const toggleTimer = () => {
   } else {
     startTimer();
   }
-}
+};
 
 const startTimer = () => {
   isRunning.value = true;
@@ -76,52 +83,56 @@ const startTimer = () => {
     } else {
       switchMode();
     }
-  }, 1000)
-}
+  }, 1000);
+};
 
 const stopTimer = () => {
   isRunning.value = false;
-  clearInterval(interval)
+  clearInterval(interval);
   stopAudio();
-}
+};
 
 const updateTitle = () => {
-  const labelMode = currentMode.value === 'pomodoro' ? 'Foco' : 'Descanse';
-  document.title = `${formattedTime.value} - ${labelMode}`
-}
+  const labelMode = currentMode.value === "pomodoro" ? "Foco" : "Descanse";
+  document.title = `${formattedTime.value} - ${labelMode}`;
+};
 
 const switchMode = () => {
-  currentMode.value = currentMode.value === 'pomodoro' ? 'descanso' : 'pomodoro';
-  time.value = currentMode.value === 'pomodoro' ? 25 * 60 : 5 * 60;
+  currentMode.value =
+    currentMode.value === "pomodoro" ? "descanso" : "pomodoro";
+  time.value = currentMode.value === "pomodoro" ? 25 * 60 : 5 * 60;
   stopTimer();
-}
+  endAudio.play();
+};
 
-watch(time, updateTitle)
+watch(time, updateTitle);
 
 onBeforeUnmount(() => {
   clearInterval(interval);
   stopAudio();
-})
+});
 
 onMounted(() => {
   loadAudio();
-})
+});
 </script>
 
 <template>
-  <div class="flex flex-col rounded-xl items-center place-self-center justify-center max-w-min p-32 my-40 bg-gray-100 bg-opacity-5">
+  <div
+    class="flex flex-col rounded-xl items-center place-self-center justify-center max-w-min p-32 my-40 bg-gray-100 bg-opacity-5">
     <h1 class="text-3xl font-bold mb-4 text-white">
-      {{ currentMode === 'pomodoro' ? 'Foco' : 'Descanse' }}
+      {{ currentMode === "pomodoro" ? "Foco" : "Descanse" }}
     </h1>
     <p class="text-6xl font-mono mb-6 text-white">
       {{ formattedTime }}
     </p>
     <div class="flex w-full justify-around items-center">
-      <button @click="toggleTimer" class="w-2/3 button-30 px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
-      {{ isRunning ? 'Parar' : 'Começar' }}
+      <button @click="toggleTimer"
+        class="w-2/3 button-30 px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
+        {{ isRunning ? "Parar" : "Começar" }}
       </button>
       <button @click="switchMode">
-        <img class="w-10 skip-button" :src="skip">
+        <img class="w-10 skip-button" :src="skip" />
       </button>
     </div>
   </div>
@@ -131,15 +142,16 @@ onMounted(() => {
 .button-30 {
   align-items: center;
   appearance: none;
-  background-color: #FCFCFD;
+  background-color: #fcfcfd;
   border-radius: 4px;
   border-width: 0;
-  box-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,rgba(45, 35, 66, 0.3) 0 7px 13px -3px,#D6D6E7 0 -3px 0 inset;
+  box-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px,
+    rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #d6d6e7 0 -3px 0 inset;
   box-sizing: border-box;
-  color: #36395A;
+  color: #36395a;
   cursor: pointer;
   display: inline-flex;
-  font-family: "JetBrains Mono",monospace;
+  font-family: "JetBrains Mono", monospace;
   height: 48px;
   justify-content: center;
   line-height: 1;
@@ -150,26 +162,28 @@ onMounted(() => {
   position: relative;
   text-align: left;
   text-decoration: none;
-  transition: box-shadow .15s,transform .15s;
+  transition: box-shadow 0.15s, transform 0.15s;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
   white-space: nowrap;
-  will-change: box-shadow,transform;
+  will-change: box-shadow, transform;
   font-size: 18px;
 }
 
 .button-30:focus {
-  box-shadow: #D6D6E7 0 0 0 1.5px inset, rgba(45, 35, 66, 0.4) 0 2px 4px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #D6D6E7 0 -3px 0 inset;
+  box-shadow: #d6d6e7 0 0 0 1.5px inset, rgba(45, 35, 66, 0.4) 0 2px 4px,
+    rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #d6d6e7 0 -3px 0 inset;
 }
 
 .button-30:hover {
-  box-shadow: rgba(45, 35, 66, 0.4) 0 4px 8px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #D6D6E7 0 -3px 0 inset;
+  box-shadow: rgba(45, 35, 66, 0.4) 0 4px 8px,
+    rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #d6d6e7 0 -3px 0 inset;
   transform: translateY(-2px);
 }
 
 .button-30:active {
-  box-shadow: #D6D6E7 0 3px 7px inset;
+  box-shadow: #d6d6e7 0 3px 7px inset;
   transform: translateY(2px);
 }
 
