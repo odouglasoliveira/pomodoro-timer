@@ -123,7 +123,7 @@ onMounted(() => {
     <h1 class="text-3xl font-bold mb-4 text-white">
       {{ currentMode === "pomodoro" ? "Foco" : "Descanse" }}
     </h1>
-    <p class="text-6xl font-mono mb-6 text-white">
+    <p class="text-8xl font-bold font-sans mb-6 text-white">
       {{ formattedTime }}
     </p>
     <div class="flex w-full justify-around items-center">
