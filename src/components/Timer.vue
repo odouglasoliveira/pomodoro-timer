@@ -1,11 +1,55 @@
 <script setup>
-import { ref, computed, watch, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onBeforeUnmount, onMounted } from 'vue'
 
 import skip from '/skip-svgrepo-com.svg'
+import tickingClock from '../audio/ticking-clock.mp3'
 
 const time = ref(25 * 60);
 const isRunning = ref(false);
 const currentMode = ref('pomodoro');
+
+let audioContext = null;
+let audioBuffer = null;
+const overlapTime = 0.1;
+let nextStartTime = 0;
+
+const loadAudio = async () => {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)()
+  }
+  const response = await fetch(tickingClock);
+  const arrayBuffer = await response.arrayBuffer();
+  audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+}
+
+const startAudio = () => {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  nextStartTime = audioContext.currentTime;
+
+  const scheduleNext = () => {
+    if (!isRunning.value) return;
+
+    const source = audioContext.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(audioContext.destination);
+
+    source.start(nextStartTime);
+    nextStartTime += audioBuffer.duration - overlapTime;
+
+    setTimeout(scheduleNext, (audioBuffer.duration - overlapTime) * 1000);
+  };
+
+  scheduleNext();
+};
+
+const stopAudio = () => {
+  if (audioContext) {
+    audioContext.suspend();
+    audioContext = null;
+  }
+};
 
 let interval = null;
 
@@ -25,6 +69,7 @@ const toggleTimer = () => {
 
 const startTimer = () => {
   isRunning.value = true;
+  startAudio();
   interval = setInterval(() => {
     if (time.value > 0) {
       time.value -= 1;
@@ -37,6 +82,7 @@ const startTimer = () => {
 const stopTimer = () => {
   isRunning.value = false;
   clearInterval(interval)
+  stopAudio();
 }
 
 const updateTitle = () => {
@@ -54,6 +100,11 @@ watch(time, updateTitle)
 
 onBeforeUnmount(() => {
   clearInterval(interval);
+  stopAudio();
+})
+
+onMounted(() => {
+  loadAudio();
 })
 </script>
 
