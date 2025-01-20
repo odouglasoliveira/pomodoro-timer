@@ -121,7 +121,7 @@ onMounted(() => {
       {{ isRunning ? 'Parar' : 'Começar' }}
       </button>
       <button @click="switchMode">
-        <img class="w-10" :src="skip">
+        <img class="w-10 skip-button" :src="skip">
       </button>
     </div>
   </div>
@@ -170,6 +170,14 @@ onMounted(() => {
 
 .button-30:active {
   box-shadow: #D6D6E7 0 3px 7px inset;
+  transform: translateY(2px);
+}
+
+.skip-button:hover {
+  transform: translateY(-2px);
+}
+
+.skip-button:active {
   transform: translateY(2px);
 }
 </style>
