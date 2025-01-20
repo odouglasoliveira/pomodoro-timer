@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onBeforeUnmount } from 'vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 
 import skip from '/skip-svgrepo-com.svg'
 
@@ -39,16 +39,22 @@ const stopTimer = () => {
   clearInterval(interval)
 }
 
+const updateTitle = () => {
+  const labelMode = currentMode.value === 'pomodoro' ? 'Foco' : 'Descanse';
+  document.title = `${formattedTime.value} - ${labelMode}`
+}
+
 const switchMode = () => {
   currentMode.value = currentMode.value === 'pomodoro' ? 'descanso' : 'pomodoro';
   time.value = currentMode.value === 'pomodoro' ? 25 * 60 : 5 * 60;
   stopTimer();
 }
 
+watch(time, updateTitle)
+
 onBeforeUnmount(() => {
   clearInterval(interval);
 })
-
 </script>
 
 <template>
