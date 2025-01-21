@@ -21,22 +21,24 @@
 
 <script setup>
 import { ref, computed, watch, onBeforeUnmount, onMounted } from "vue";
+import { useTimerStore } from '../store'
 
 import skip from "/skip-svgrepo-com.svg";
 import tickingClock from "../audio/ticking-clock.mp3";
 import rainSound from '../audio/rain-sound.mp3';
 import bell from "../audio/bell.mp3";
 
+const store = useTimerStore();
 const time = ref(25 * 60);
 const isRunning = ref(false);
 const currentMode = ref("pomodoro");
-
+const overlapTime = 0.05;
+const endAudio = new Audio(bell).volume = 0.2;
 let audioContext = null;
 let audioBuffer = null;
-const overlapTime = 0.05;
 let nextStartTime = 0;
-const endAudio = new Audio(bell);
-endAudio.volume = 0.2;
+let interval = null;
+
 
 const loadAudio = async () => {
   if (!audioContext) {
@@ -78,8 +80,6 @@ const stopAudio = () => {
   }
 };
 
-let interval = null;
-
 const formattedTime = computed(() => {
   const minutes = Math.floor(time.value / 60)
     .toString()
@@ -103,6 +103,10 @@ const startTimer = () => {
     if (time.value > 0) {
       time.value -= 1;
     } else {
+      if (currentMode.value === 'pomodoro') {
+        store.incrementSession();
+      }
+      endAudio.play();
       switchMode();
     }
   }, 1000);
@@ -124,7 +128,6 @@ const switchMode = () => {
     currentMode.value === "pomodoro" ? "descanso" : "pomodoro";
   time.value = currentMode.value === "pomodoro" ? 25 * 60 : 5 * 60;
   stopTimer();
-  endAudio.play();
 };
 
 watch(time, updateTitle);
