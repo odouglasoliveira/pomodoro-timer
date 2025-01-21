@@ -1,8 +1,30 @@
+<template>
+  <div
+    class="flex font-sans flex-col rounded-xl items-center place-self-center justify-center max-w-min p-32 my-40 bg-gray-100 bg-opacity-5">
+    <h1 class="text-3xl font-bold mb-4 text-white">
+      {{ currentMode === "pomodoro" ? "Foco" : "Descanse" }}
+    </h1>
+    <p class="text-8xl font-bold mb-6 text-white">
+      {{ formattedTime }}
+    </p>
+    <div class="flex w-full justify-around items-center">
+      <button @click="toggleTimer"
+        class="w-2/3 button-30">
+        {{ isRunning ? "Parar" : "Começar" }}
+      </button>
+      <button @click="switchMode">
+        <img class="w-10 skip-button" :src="skip" />
+      </button>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref, computed, watch, onBeforeUnmount, onMounted } from "vue";
 
 import skip from "/skip-svgrepo-com.svg";
 import tickingClock from "../audio/ticking-clock.mp3";
+import rainSound from '../audio/rain-sound.mp3';
 import bell from "../audio/bell.mp3";
 
 const time = ref(25 * 60);
@@ -20,7 +42,7 @@ const loadAudio = async () => {
   if (!audioContext) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
   }
-  const response = await fetch(tickingClock);
+  const response = await fetch(rainSound);
   const arrayBuffer = await response.arrayBuffer();
   audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 };
@@ -117,27 +139,6 @@ onMounted(() => {
 });
 </script>
 
-<template>
-  <div
-    class="flex flex-col rounded-xl items-center place-self-center justify-center max-w-min p-32 my-40 bg-gray-100 bg-opacity-5">
-    <h1 class="text-3xl font-bold mb-4 text-white">
-      {{ currentMode === "pomodoro" ? "Foco" : "Descanse" }}
-    </h1>
-    <p class="text-8xl font-bold font-sans mb-6 text-white">
-      {{ formattedTime }}
-    </p>
-    <div class="flex w-full justify-around items-center">
-      <button @click="toggleTimer"
-        class="w-2/3 button-30 px-6 py-3 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition">
-        {{ isRunning ? "Parar" : "Começar" }}
-      </button>
-      <button @click="switchMode">
-        <img class="w-10 skip-button" :src="skip" />
-      </button>
-    </div>
-  </div>
-</template>
-
 <style scoped>
 .button-30 {
   align-items: center;
@@ -151,7 +152,6 @@ onMounted(() => {
   color: #36395a;
   cursor: pointer;
   display: inline-flex;
-  font-family: "JetBrains Mono", monospace;
   height: 48px;
   justify-content: center;
   line-height: 1;
