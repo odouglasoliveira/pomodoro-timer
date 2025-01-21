@@ -3,11 +3,10 @@ import { ref } from "vue";
 
 export const useTimerStore = defineStore("timer", () => {
   const sessionsInFocus = ref(0);
-  function incrementSession() {
-    sessionsInFocus.value++;
-  }
+  const incrementSession = () => sessionsInFocus.value++;
+  const getTimeInSeconds = (minutes) => minutes * 60;
 
-  return { sessionsInFocus, incrementSession };
+  return { sessionsInFocus, incrementSession, getTimeInSeconds };
 });
 
 export const useThemeStore = defineStore("theme", {

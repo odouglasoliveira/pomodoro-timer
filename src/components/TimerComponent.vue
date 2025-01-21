@@ -127,7 +127,10 @@ const updateTitle = () => {
 
 const switchMode = () => {
   currentMode.value = currentMode.value === "focus" ? "rest" : "focus";
-  time.value = currentMode.value === "focus" ? 25 * 60 : 5 * 60;
+  time.value =
+    currentMode.value === "focus"
+      ? store.getTimeInSeconds(25)
+      : store.getTimeInSeconds(5);
   stopTimer();
 };
 
