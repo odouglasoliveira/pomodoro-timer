@@ -13,7 +13,12 @@
         {{ isRunning ? "Parar" : "Começar" }}
       </button>
       <button @click="switchMode">
-        <img class="w-10 skip-button" :src="skip" />
+        <img
+          class="w-10 skip-button"
+          :src="skip"
+          title="Pular sessão"
+          alt="Pular sessão"
+        />
       </button>
     </div>
   </div>
@@ -203,14 +208,6 @@ onMounted(() => {
 
 .start-button:active {
   box-shadow: #d6d6e7 0 3px 7px inset;
-  transform: translateY(2px);
-}
-
-.skip-button:hover {
-  transform: translateY(-2px);
-}
-
-.skip-button:active {
   transform: translateY(2px);
 }
 </style>

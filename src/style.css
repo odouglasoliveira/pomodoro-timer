@@ -2,7 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+button > img:hover {
+  transform: translateY(-2px);
+  transition: 200ms;
+}
+
+button > img:active {
+  transform: translateY(0px);
+}
+
 :root {
+  --bg-btn: #fed7d7;
+  --btn-color: #e53e3e;
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
