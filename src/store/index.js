@@ -1,13 +1,12 @@
-import { defineStore } from "pinia";;
-import { ref, computed } from 'vue'
+import { defineStore } from "pinia";
+import { ref } from "vue";
 
-export const useTimerStore = defineStore('timer', () => {
-
-  const sessionInFocus = ref(0)
+export const useTimerStore = defineStore("timer", () => {
+  const sessionInFocus = ref(0);
   function incrementSession() {
-    sessionInFocus.value++
+    sessionInFocus.value++;
   }
-  const currentMode = ref('focus')
+  const currentMode = ref("focus");
 
-  return { sessionInFocus, incrementSession, currentMode }
-})
+  return { sessionInFocus, incrementSession, currentMode };
+});

@@ -1,6 +1,7 @@
 <template>
   <div
-    class="flex font-sans flex-col rounded-xl items-center place-self-center justify-center max-w-min p-32 my-40 bg-gray-100 bg-opacity-5">
+    class="flex font-sans flex-col rounded-xl items-center place-self-center justify-center max-w-min p-32 my-40 bg-gray-100 bg-opacity-5"
+  >
     <h1 class="text-3xl font-bold mb-4 text-white">
       {{ currentMode === "focus" ? "Foco" : "Descanse" }}
     </h1>
@@ -8,8 +9,7 @@
       {{ formattedTime }}
     </p>
     <div class="flex w-full justify-around items-center">
-      <button @click="toggleTimer"
-        class="w-2/3 button-30">
+      <button @click="toggleTimer" class="w-2/3 button-30">
         {{ isRunning ? "Parar" : "Começar" }}
       </button>
       <button @click="switchMode">
@@ -21,11 +21,10 @@
 
 <script setup>
 import { ref, computed, watch, onBeforeUnmount, onMounted } from "vue";
-import { useTimerStore } from '../store'
+import { useTimerStore } from "../store";
 
 import skip from "/skip-svgrepo-com.svg";
-import tickingClock from "../audio/ticking-clock.mp3";
-import rainSound from '../audio/rain-sound.mp3';
+import rainSound from "../audio/rain-sound.mp3";
 import bell from "../audio/bell.mp3";
 
 const store = useTimerStore();
@@ -33,12 +32,11 @@ const time = ref(25 * 60);
 const isRunning = ref(false);
 const currentMode = ref("focus");
 const overlapTime = 0.05;
-const endAudio = new Audio(bell).volume = 0.2;
+const endAudio = (new Audio(bell).volume = 0.2);
 let audioContext = null;
 let audioBuffer = null;
 let nextStartTime = 0;
 let interval = null;
-
 
 const loadAudio = async () => {
   if (!audioContext) {
@@ -124,8 +122,7 @@ const updateTitle = () => {
 };
 
 const switchMode = () => {
-  currentMode.value =
-    currentMode.value === "focus" ? "rest" : "focus";
+  currentMode.value = currentMode.value === "focus" ? "rest" : "focus";
   time.value = currentMode.value === "focus" ? 25 * 60 : 5 * 60;
   stopTimer();
 };
