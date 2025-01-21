@@ -9,7 +9,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <h1>Cronômetro Pomodoro</h1>
+  <h1 class="font-bold">Cronômetro Pomodoro</h1>
   <Timer />
 </template>
 
