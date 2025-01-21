@@ -9,7 +9,7 @@
       {{ formattedTime }}
     </p>
     <div class="flex w-full justify-around items-center">
-      <button @click="toggleTimer" class="w-2/3 button-30">
+      <button @click="toggleTimer" class="w-2/3 start-button">
         {{ isRunning ? "Parar" : "Começar" }}
       </button>
       <button @click="switchMode">
@@ -21,18 +21,19 @@
 
 <script setup>
 import { ref, computed, watch, onBeforeUnmount, onMounted } from "vue";
-import { useTimerStore } from "../store";
+import { useTimerStore, useThemeStore } from "../store";
 
 import skip from "/skip-svgrepo-com.svg";
 import rainSound from "../audio/rain-sound.mp3";
 import bell from "../audio/bell.mp3";
 
 const store = useTimerStore();
+const themeStore = useThemeStore();
 const time = ref(25 * 60);
 const isRunning = ref(false);
 const currentMode = ref("focus");
 const overlapTime = 0.05;
-const endAudio = (new Audio(bell).volume = 0.2);
+const endAudio = new Audio(bell);
 let audioContext = null;
 let audioBuffer = null;
 let nextStartTime = 0;
@@ -96,6 +97,7 @@ const toggleTimer = () => {
 
 const startTimer = () => {
   isRunning.value = true;
+  updateBackgroundColor();
   startAudio();
   interval = setInterval(() => {
     if (time.value > 0) {
@@ -104,6 +106,7 @@ const startTimer = () => {
       if (currentMode.value === "focus") {
         store.incrementSession();
       }
+      endAudio.volume = 0.2;
       endAudio.play();
       switchMode();
     }
@@ -112,6 +115,7 @@ const startTimer = () => {
 
 const stopTimer = () => {
   isRunning.value = false;
+  updateBackgroundColor();
   clearInterval(interval);
   stopAudio();
 };
@@ -127,6 +131,18 @@ const switchMode = () => {
   stopTimer();
 };
 
+const updateBackgroundColor = () => {
+  if (currentMode.value === "rest") {
+    themeStore.updateBackgroundColor("#055864");
+  } else {
+    if (isRunning.value) {
+      themeStore.updateBackgroundColor("#222222");
+    } else {
+      themeStore.updateBackgroundColor("#ad4043");
+    }
+  }
+};
+
 watch(time, updateTitle);
 
 onBeforeUnmount(() => {
@@ -140,7 +156,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.button-30 {
+.start-button {
   align-items: center;
   appearance: none;
   background-color: #fcfcfd;
@@ -171,18 +187,18 @@ onMounted(() => {
   font-size: 18px;
 }
 
-.button-30:focus {
+.start-button:focus {
   box-shadow: #d6d6e7 0 0 0 1.5px inset, rgba(45, 35, 66, 0.4) 0 2px 4px,
     rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #d6d6e7 0 -3px 0 inset;
 }
 
-.button-30:hover {
+.start-button:hover {
   box-shadow: rgba(45, 35, 66, 0.4) 0 4px 8px,
     rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #d6d6e7 0 -3px 0 inset;
   transform: translateY(-2px);
 }
 
-.button-30:active {
+.start-button:active {
   box-shadow: #d6d6e7 0 3px 7px inset;
   transform: translateY(2px);
 }
