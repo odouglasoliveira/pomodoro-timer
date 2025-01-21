@@ -7,6 +7,7 @@ export const useTimerStore = defineStore('timer', () => {
   function incrementSession() {
     sessionInFocus.value++
   }
+  const currentMode = ref('focus')
 
-  return { sessionInFocus, incrementSession }
+  return { sessionInFocus, incrementSession, currentMode }
 })

@@ -2,7 +2,7 @@
   <div
     class="flex font-sans flex-col rounded-xl items-center place-self-center justify-center max-w-min p-32 my-40 bg-gray-100 bg-opacity-5">
     <h1 class="text-3xl font-bold mb-4 text-white">
-      {{ currentMode === "pomodoro" ? "Foco" : "Descanse" }}
+      {{ currentMode === "focus" ? "Foco" : "Descanse" }}
     </h1>
     <p class="text-8xl font-bold mb-6 text-white">
       {{ formattedTime }}
@@ -31,7 +31,7 @@ import bell from "../audio/bell.mp3";
 const store = useTimerStore();
 const time = ref(25 * 60);
 const isRunning = ref(false);
-const currentMode = ref("pomodoro");
+const currentMode = ref("focus");
 const overlapTime = 0.05;
 const endAudio = new Audio(bell).volume = 0.2;
 let audioContext = null;
@@ -50,7 +50,7 @@ const loadAudio = async () => {
 };
 
 const startAudio = () => {
-  if (currentMode.value !== "descanso") {
+  if (currentMode.value !== "rest") {
     if (!audioContext) {
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
@@ -103,7 +103,7 @@ const startTimer = () => {
     if (time.value > 0) {
       time.value -= 1;
     } else {
-      if (currentMode.value === 'pomodoro') {
+      if (currentMode.value === "focus") {
         store.incrementSession();
       }
       endAudio.play();
@@ -119,14 +119,14 @@ const stopTimer = () => {
 };
 
 const updateTitle = () => {
-  const labelMode = currentMode.value === "pomodoro" ? "Foco" : "Descanse";
+  const labelMode = currentMode.value === "focus" ? "Foco" : "Descanse";
   document.title = `${formattedTime.value} - ${labelMode}`;
 };
 
 const switchMode = () => {
   currentMode.value =
-    currentMode.value === "pomodoro" ? "descanso" : "pomodoro";
-  time.value = currentMode.value === "pomodoro" ? 25 * 60 : 5 * 60;
+    currentMode.value === "focus" ? "rest" : "focus";
+  time.value = currentMode.value === "focus" ? 25 * 60 : 5 * 60;
   stopTimer();
 };
 
