@@ -103,7 +103,7 @@ const toggleTimer = () => {
 const startTimer = () => {
   isRunning.value = true;
   updateBackgroundColor();
-  startAudio();
+  // startAudio();
   interval = setInterval(() => {
     if (time.value > 0) {
       time.value -= 1;
@@ -122,7 +122,7 @@ const stopTimer = () => {
   isRunning.value = false;
   updateBackgroundColor();
   clearInterval(interval);
-  stopAudio();
+  // stopAudio();
 };
 
 const updateTitle = () => {
@@ -155,7 +155,7 @@ watch(time, updateTitle);
 
 onBeforeUnmount(() => {
   clearInterval(interval);
-  stopAudio();
+  // stopAudio();
 });
 
 onMounted(() => {
