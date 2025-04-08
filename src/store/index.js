@@ -3,9 +3,9 @@ import { ref } from "vue";
 
 export const useTimerStore = defineStore("timer", () => {
   const sessionsInFocus = ref(0);
-  const focusTime = ref(25);
-  const restTime = ref(5);
-  // Inicializa com o valor do localStorage
+  const focusTime = ref(parseInt(localStorage.getItem("focusTime")) || 25);
+  const restTime = ref(parseInt(localStorage.getItem("restTime")) || 5);
+  const currentMode = ref(localStorage.getItem("currentMode") || "focus");
   const enableNotification = ref(
     localStorage.getItem("notificationsEnabled") === "true"
   );
@@ -16,12 +16,18 @@ export const useTimerStore = defineStore("timer", () => {
   const updateTimes = (newFocusTime, newRestTime) => {
     focusTime.value = newFocusTime;
     restTime.value = newRestTime;
+    localStorage.setItem("focusTime", newFocusTime);
+    localStorage.setItem("restTime", newRestTime);
   };
 
   const toggleNotification = (value) => {
     enableNotification.value = value;
-    // Salva no localStorage quando alterado
     localStorage.setItem("notificationsEnabled", value);
+  };
+
+  const setCurrentMode = (mode) => {
+    currentMode.value = mode;
+    localStorage.setItem("currentMode", mode);
   };
 
   return {
@@ -30,6 +36,8 @@ export const useTimerStore = defineStore("timer", () => {
     sessionsInFocus,
     focusTime,
     restTime,
+    currentMode,
+    setCurrentMode,
     incrementSession,
     getTimeInSeconds,
     updateTimes,

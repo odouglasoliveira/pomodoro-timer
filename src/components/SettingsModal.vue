@@ -23,6 +23,29 @@
         ></label>
       </div>
     </div>
+    <div class="flex justify-between items-center">
+      <p>Tempo de Foco (min)</p>
+      <input
+        type="number"
+        v-model="focusTimeInput"
+        @change="updateTimes"
+        min="1"
+        max="60"
+        class="w-16 p-1 border rounded"
+      />
+    </div>
+
+    <div class="flex justify-between items-center">
+      <p>Tempo de Descanso (min)</p>
+      <input
+        type="number"
+        v-model="restTimeInput"
+        @change="updateTimes"
+        min="1"
+        max="30"
+        class="w-16 p-1 border rounded"
+      />
+    </div>
   </section>
 </template>
 
@@ -30,14 +53,19 @@
 import { onMounted, ref } from "vue";
 import closeModalIcon from "/close-svgrepo-com.svg";
 import { useTimerStore } from "../store";
+const store = useTimerStore();
+
+const focusTimeInput = ref(store.focusTime);
+const restTimeInput = ref(store.restTime);
+
+const updateTimes = () => {
+  store.updateTimes(focusTimeInput.value, restTimeInput.value);
+};
 
 defineProps({
   toggleModal: Function,
 });
 
-const store = useTimerStore();
-
-// Inicializa com o valor da store
 const enableNotification = ref(store.enableNotification);
 
 const updateButtonStyle = () => {
@@ -52,7 +80,6 @@ const updateButtonStyle = () => {
 };
 
 const toggleNotification = async () => {
-  // Se estiver habilitando as notificações, solicita permissão
   if (enableNotification.value && Notification.permission === "default") {
     const permission = await Notification.requestPermission();
     if (permission !== "granted") {

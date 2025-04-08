@@ -29,21 +29,21 @@ import { ref, computed, watch, onBeforeUnmount, onMounted } from "vue";
 import { useTimerStore, useThemeStore } from "../store";
 
 import skip from "/skip-svgrepo-com.svg";
-import rainSound from "../audio/rain-sound.mp3";
 import bell from "../audio/bell.mp3";
 
 const notificationPermission = ref("default");
 const notificationsEnabled = computed(() => store.enableNotification);
 const store = useTimerStore();
 const themeStore = useThemeStore();
-const time = ref(25 * 60);
+const currentMode = ref(store.currentMode);
+const time = ref(
+  parseInt(localStorage.getItem("currentTime")) ||
+    (currentMode.value === "focus"
+      ? store.getTimeInSeconds(store.focusTime)
+      : store.getTimeInSeconds(store.restTime))
+);
 const isRunning = ref(false);
-const currentMode = ref("focus");
-const overlapTime = 0.05;
 const endAudio = new Audio(bell);
-let audioContext = null;
-let audioBuffer = null;
-let nextStartTime = 0;
 let interval = null;
 
 const setupNotifications = async () => {
@@ -84,53 +84,13 @@ const sendNotification = () => {
   }
 };
 
-const loadAudio = async () => {
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  const response = await fetch(rainSound);
-  const arrayBuffer = await response.arrayBuffer();
-  audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-};
-
-const startAudio = () => {
-  if (!store.enableBackgroundSound) return;
-  if (currentMode.value !== "rest") {
-    if (!audioContext) {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    nextStartTime = audioContext.currentTime;
-
-    const scheduleNext = () => {
-      if (!isRunning.value) return;
-      if (!store.enableBackgroundSound) return;
-
-      const source = audioContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(audioContext.destination);
-
-      source.start(nextStartTime);
-      nextStartTime += audioBuffer.duration - overlapTime;
-
-      setTimeout(scheduleNext, (audioBuffer.duration - overlapTime) * 1000);
-    };
-
-    scheduleNext();
-  }
-};
-
-const stopAudio = () => {
-  if (audioContext) {
-    audioContext.suspend();
-    audioContext = null;
-  }
-};
-
 const formattedTime = computed(() => {
-  const minutes = Math.floor(time.value / 60)
+  const timeValue = isNaN(time.value) ? 0 : time.value;
+
+  const minutes = Math.floor(timeValue / 60)
     .toString()
     .padStart(2, "0");
-  const seconds = (time.value % 60).toString().padStart(2, "0");
+  const seconds = (timeValue % 60).toString().padStart(2, "0");
   return `${minutes}:${seconds}`;
 });
 
@@ -148,7 +108,6 @@ const startTimer = () => {
   if (notificationPermission.value === "default") {
     setupNotifications();
   }
-  // startAudio();
   interval = setInterval(() => {
     if (time.value > 0) {
       time.value -= 1;
@@ -168,7 +127,6 @@ const stopTimer = () => {
   isRunning.value = false;
   updateBackgroundColor();
   clearInterval(interval);
-  // stopAudio();
 };
 
 const updateTitle = () => {
@@ -178,10 +136,15 @@ const updateTitle = () => {
 
 const switchMode = () => {
   currentMode.value = currentMode.value === "focus" ? "rest" : "focus";
+  store.setCurrentMode(currentMode.value);
+
   time.value =
     currentMode.value === "focus"
-      ? store.getTimeInSeconds(25)
-      : store.getTimeInSeconds(5);
+      ? store.getTimeInSeconds(store.focusTime)
+      : store.getTimeInSeconds(store.restTime);
+
+  localStorage.setItem("currentTime", time.value.toString());
+
   stopTimer();
 };
 
@@ -197,26 +160,31 @@ const updateBackgroundColor = () => {
   }
 };
 
-watch(time, updateTitle);
+watch(time, (newValue) => {
+  updateTitle();
+  localStorage.setItem("currentTime", newValue.toString());
+});
+
 watch(
-  () => store.enableBackgroundSound,
-  (newValue) => {
-    if (newValue) {
-      startAudio();
-    } else {
-      stopAudio();
-    }
+  () => store.currentMode,
+  (newMode) => {
+    currentMode.value = newMode;
   }
 );
 
 onBeforeUnmount(() => {
   clearInterval(interval);
-  stopAudio();
 });
 
 onMounted(() => {
-  loadAudio();
+  if (isNaN(time.value)) {
+    time.value =
+      currentMode.value === "focus"
+        ? store.getTimeInSeconds(store.focusTime)
+        : store.getTimeInSeconds(store.restTime);
+  }
   setupNotifications();
+  updateBackgroundColor();
 });
 
 watch(notificationsEnabled, (newValue) => {
