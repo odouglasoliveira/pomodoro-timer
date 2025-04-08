@@ -5,46 +5,47 @@
     <button class="absolute right-4 top-4" @click="toggleModal">
       <img width="20" :src="closeModalIcon" alt="Fechar modal" />
     </button>
-    <div class="flex h-full w-full justify-around items-center">
-      <p>Notificação</p>
-      <div class="btn-status">
-        <input
-          v-model="enableNotification"
-          :checked="enableNotification"
-          @change="toggleNotification"
-          type="checkbox"
-          name="checkbox"
-          id="checkbox"
-          class="hidden"
-        />
-        <label
-          for="checkbox"
-          class="btn-change flex items-center p-1 rounded-lg w-12 h-6 cursor-pointer"
-        ></label>
+    <div class="flex flex-col h-full w-full justify-center gap-4">
+      <div class="flex justify-between px-4 items-baseline">
+        <p>Notificação</p>
+        <div class="btn-status">
+          <input
+            v-model="enableNotification"
+            :checked="enableNotification"
+            @change="toggleNotification"
+            type="checkbox"
+            name="checkbox"
+            id="checkbox"
+            class="hidden"
+          />
+          <label
+            for="checkbox"
+            class="btn-change flex items-center p-1 rounded-lg w-12 h-6 cursor-pointer"
+          ></label>
+        </div>
       </div>
-    </div>
-    <div class="flex justify-between items-center">
-      <p>Tempo de Foco (min)</p>
-      <input
-        type="number"
-        v-model="focusTimeInput"
-        @change="updateTimes"
-        min="1"
-        max="60"
-        class="w-16 p-1 border rounded"
-      />
-    </div>
-
-    <div class="flex justify-between items-center">
-      <p>Tempo de Descanso (min)</p>
-      <input
-        type="number"
-        v-model="restTimeInput"
-        @change="updateTimes"
-        min="1"
-        max="30"
-        class="w-16 p-1 border rounded"
-      />
+      <div class="flex justify-between px-4 items-baseline">
+        <p>Tempo de Foco (min)</p>
+        <input
+          type="number"
+          v-model="focusTimeInput"
+          @change="updateTimes"
+          min="1"
+          max="60"
+          class="w-16 p-1 border rounded-md bg-zinc-200"
+        />
+      </div>
+      <div class="flex justify-between px-4 items-baseline">
+        <p>Tempo de Descanso (min)</p>
+        <input
+          type="number"
+          v-model="restTimeInput"
+          @change="updateTimes"
+          min="1"
+          max="30"
+          class="w-16 p-1 border rounded-md bg-zinc-200 focus:"
+        />
+      </div>
     </div>
   </section>
 </template>
@@ -102,6 +103,16 @@ onMounted(() => {
 #checkbox:checked ~ .btn-change::before {
   transition: 0.3s;
   transform: translateX(23px);
+}
+
+input:focus {
+  outline: none;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .btn-change {
