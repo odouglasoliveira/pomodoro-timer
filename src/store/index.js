@@ -3,10 +3,32 @@ import { ref } from "vue";
 
 export const useTimerStore = defineStore("timer", () => {
   const sessionsInFocus = ref(0);
+  const focusTime = ref(25);
+  const restTime = ref(5);
+  const enableBackgroundSound = ref(false);
+
   const incrementSession = () => sessionsInFocus.value++;
+
   const getTimeInSeconds = (minutes) => minutes * 60;
 
-  return { sessionsInFocus, incrementSession, getTimeInSeconds };
+  const updateTimes = (newFocusTime, newRestTime) => {
+    focusTime.value = newFocusTime;
+    restTime.value = newRestTime;
+  };
+  const toggleBackgroundSound = (value) => {
+    enableBackgroundSound.value = value;
+  };
+
+  return {
+    enableBackgroundSound,
+    toggleBackgroundSound,
+    sessionsInFocus,
+    focusTime,
+    restTime,
+    incrementSession,
+    getTimeInSeconds,
+    updateTimes,
+  };
 });
 
 export const useThemeStore = defineStore("theme", {

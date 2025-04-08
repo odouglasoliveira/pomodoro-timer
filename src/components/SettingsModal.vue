@@ -1,6 +1,6 @@
 <template>
   <section
-    class="bg-white text-black rounded-xl mx-auto w-[300px] h-[600px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
+    class="bg-white text-black rounded-xl mx-auto w-[300px] h-[600px] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10"
   >
     <button class="absolute right-4 top-4" @click="toggleModal">
       <img width="20" :src="closeModalIcon" alt="Fechar modal" />
@@ -11,6 +11,7 @@
         <input
           v-model="enableBackgroundSound"
           :checked="enableBackgroundSound"
+          @change="toggleSound"
           type="checkbox"
           name="checkbox"
           id="checkbox"
@@ -28,12 +29,15 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import closeModalIcon from "/close-svgrepo-com.svg";
+import { useTimerStore } from "../store";
 
 defineProps({
   toggleModal: Function,
 });
 
-const enableBackgroundSound = ref(true);
+const store = useTimerStore();
+
+const enableBackgroundSound = ref(store.enableBackgroundSound);
 
 onMounted(() => {
   const btn = document.querySelector(".btn-change");
@@ -53,6 +57,26 @@ onMounted(() => {
       btn.style.setProperty("--btn-color", "#38A169");
     }
   });
+});
+
+const updateSoundButtonStyle = () => {
+  const btn = document.querySelector(".btn-change");
+  if (!enableBackgroundSound.value) {
+    btn.style.setProperty("--bg-btn", "#fed7d7");
+    btn.style.setProperty("--btn-color", "#e53e3e");
+  } else {
+    btn.style.setProperty("--bg-btn", "#C6F6D5");
+    btn.style.setProperty("--btn-color", "#38A169");
+  }
+};
+
+const toggleSound = () => {
+  store.toggleBackgroundSound(enableBackgroundSound.value);
+  updateSoundButtonStyle();
+};
+
+onMounted(() => {
+  updateSoundButtonStyle();
 });
 </script>
 
