@@ -88,8 +88,14 @@ const stopTimer = () => {
 };
 
 const updateTitle = () => {
+  const minutes = Math.floor(time.value / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (time.value % 60).toString().padStart(2, "0");
+  const formattedTime = `${minutes}:${seconds}`;
+
   const labelMode = currentMode.value === "focus" ? "Foco" : "Descanse";
-  document.title = `${time.value} - ${labelMode}`;
+  document.title = `${formattedTime} - ${labelMode}`;
 };
 
 const switchMode = () => {
