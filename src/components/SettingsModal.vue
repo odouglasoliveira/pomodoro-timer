@@ -6,12 +6,12 @@
       <img width="20" :src="closeModalIcon" alt="Fechar modal" />
     </button>
     <div class="flex h-full w-full justify-around items-center">
-      <p>Som de fundo</p>
+      <p>Notificação</p>
       <div class="btn-status">
         <input
-          v-model="enableBackgroundSound"
-          :checked="enableBackgroundSound"
-          @change="toggleSound"
+          v-model="enableNotification"
+          :checked="enableNotification"
+          @change="toggleNotification"
           type="checkbox"
           name="checkbox"
           id="checkbox"
@@ -37,46 +37,37 @@ defineProps({
 
 const store = useTimerStore();
 
-const enableBackgroundSound = ref(store.enableBackgroundSound);
+// Inicializa com o valor da store
+const enableNotification = ref(store.enableNotification);
 
-onMounted(() => {
+const updateButtonStyle = () => {
   const btn = document.querySelector(".btn-change");
-  if (!enableBackgroundSound.value) {
+  if (!enableNotification.value) {
     btn.style.setProperty("--bg-btn", "#fed7d7");
     btn.style.setProperty("--btn-color", "#e53e3e");
   } else {
     btn.style.setProperty("--bg-btn", "#C6F6D5");
     btn.style.setProperty("--btn-color", "#38A169");
   }
-  btn.addEventListener("click", () => {
-    if (enableBackgroundSound.value) {
-      btn.style.setProperty("--bg-btn", "#fed7d7");
-      btn.style.setProperty("--btn-color", "#e53e3e");
-    } else {
-      btn.style.setProperty("--bg-btn", "#C6F6D5");
-      btn.style.setProperty("--btn-color", "#38A169");
+};
+
+const toggleNotification = async () => {
+  // Se estiver habilitando as notificações, solicita permissão
+  if (enableNotification.value && Notification.permission === "default") {
+    const permission = await Notification.requestPermission();
+    if (permission !== "granted") {
+      enableNotification.value = false;
+      updateButtonStyle();
+      return;
     }
-  });
-});
-
-const updateSoundButtonStyle = () => {
-  const btn = document.querySelector(".btn-change");
-  if (!enableBackgroundSound.value) {
-    btn.style.setProperty("--bg-btn", "#fed7d7");
-    btn.style.setProperty("--btn-color", "#e53e3e");
-  } else {
-    btn.style.setProperty("--bg-btn", "#C6F6D5");
-    btn.style.setProperty("--btn-color", "#38A169");
   }
-};
 
-const toggleSound = () => {
-  store.toggleBackgroundSound(enableBackgroundSound.value);
-  updateSoundButtonStyle();
+  store.toggleNotification(enableNotification.value);
+  updateButtonStyle();
 };
 
 onMounted(() => {
-  updateSoundButtonStyle();
+  updateButtonStyle();
 });
 </script>
 

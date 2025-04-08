@@ -5,23 +5,28 @@ export const useTimerStore = defineStore("timer", () => {
   const sessionsInFocus = ref(0);
   const focusTime = ref(25);
   const restTime = ref(5);
-  const enableBackgroundSound = ref(false);
+  // Inicializa com o valor do localStorage
+  const enableNotification = ref(
+    localStorage.getItem("notificationsEnabled") === "true"
+  );
 
   const incrementSession = () => sessionsInFocus.value++;
-
   const getTimeInSeconds = (minutes) => minutes * 60;
 
   const updateTimes = (newFocusTime, newRestTime) => {
     focusTime.value = newFocusTime;
     restTime.value = newRestTime;
   };
-  const toggleBackgroundSound = (value) => {
-    enableBackgroundSound.value = value;
+
+  const toggleNotification = (value) => {
+    enableNotification.value = value;
+    // Salva no localStorage quando alterado
+    localStorage.setItem("notificationsEnabled", value);
   };
 
   return {
-    enableBackgroundSound,
-    toggleBackgroundSound,
+    enableNotification,
+    toggleNotification,
     sessionsInFocus,
     focusTime,
     restTime,

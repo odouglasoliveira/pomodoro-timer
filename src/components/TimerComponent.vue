@@ -33,9 +33,7 @@ import rainSound from "../audio/rain-sound.mp3";
 import bell from "../audio/bell.mp3";
 
 const notificationPermission = ref("default");
-const notificationsEnabled = ref(
-  localStorage.getItem("notificationsEnabled") === "true"
-);
+const notificationsEnabled = computed(() => store.enableNotification);
 const store = useTimerStore();
 const themeStore = useThemeStore();
 const time = ref(25 * 60);
@@ -63,10 +61,7 @@ const setupNotifications = async () => {
 };
 
 const sendNotification = () => {
-  if (
-    notificationPermission.value === "granted" &&
-    notificationsEnabled.value
-  ) {
+  if (notificationPermission.value === "granted" && store.enableNotification) {
     const title =
       currentMode.value === "focus"
         ? "Tempo de foco finalizado!"
