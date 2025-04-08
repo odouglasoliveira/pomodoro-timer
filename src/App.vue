@@ -1,8 +1,8 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { inject } from "@vercel/analytics";
-import TimerComponent from "./components/TimerComponent.vue";
 import SettingsModal from "./components/SettingsModal.vue";
+import TimerContainer from "./components/timer/TimerContainer.vue";
 
 const isSettingsOpen = ref(false);
 
@@ -21,7 +21,7 @@ onMounted(() => {
     <img class="w-6" src="/settings-svgrepo-com.svg" alt="Configurações" />
   </button>
   <SettingsModal v-if="isSettingsOpen" :toggleModal="toggleSettings" />
-  <TimerComponent />
+  <TimerContainer />
 </template>
 
 <style scoped>
