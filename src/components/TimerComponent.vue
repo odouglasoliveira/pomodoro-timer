@@ -29,60 +29,105 @@ import { ref, computed, watch, onBeforeUnmount, onMounted } from "vue";
 import { useTimerStore, useThemeStore } from "../store";
 
 import skip from "/skip-svgrepo-com.svg";
-import rainSound from "../audio/rain-sound.mp3";
+// import rainSound from "../audio/rain-sound.mp3";
 import bell from "../audio/bell.mp3";
 
+const notificationPermission = ref("default");
+const notificationsEnabled = ref(
+  localStorage.getItem("notificationsEnabled") === "true"
+);
 const store = useTimerStore();
 const themeStore = useThemeStore();
 const time = ref(25 * 60);
 const isRunning = ref(false);
 const currentMode = ref("focus");
-const overlapTime = 0.05;
+// const overlapTime = 0.05;
 const endAudio = new Audio(bell);
-let audioContext = null;
-let audioBuffer = null;
-let nextStartTime = 0;
+// let audioContext = null;
+// let audioBuffer = null;
+// let nextStartTime = 0;
 let interval = null;
 
-const loadAudio = async () => {
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  const response = await fetch(rainSound);
-  const arrayBuffer = await response.arrayBuffer();
-  audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-};
-
-const startAudio = () => {
-  if (currentMode.value !== "rest") {
-    if (!audioContext) {
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+const setupNotifications = async () => {
+  try {
+    if (!("Notification" in window)) {
+      console.log("Este navegador não suporta notificações");
+      return;
     }
-    nextStartTime = audioContext.currentTime;
 
-    const scheduleNext = () => {
-      if (!isRunning.value) return;
+    const permission = await Notification.requestPermission();
+    notificationPermission.value = permission;
+  } catch (error) {
+    console.error("Erro ao configurar notificações:", error);
+  }
+};
 
-      const source = audioContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(audioContext.destination);
+const sendNotification = () => {
+  if (
+    notificationPermission.value === "granted" &&
+    notificationsEnabled.value
+  ) {
+    const title =
+      currentMode.value === "focus"
+        ? "Tempo de foco finalizado!"
+        : "Tempo de descanso finalizado!";
 
-      source.start(nextStartTime);
-      nextStartTime += audioBuffer.duration - overlapTime;
+    const body =
+      currentMode.value === "focus"
+        ? "Hora de fazer uma pausa! 😌"
+        : "Hora de voltar ao foco! 💪";
 
-      setTimeout(scheduleNext, (audioBuffer.duration - overlapTime) * 1000);
+    const notification = new Notification(title, {
+      body: body,
+      icon: "/timer-svgrepo-com.svg",
+      silent: false,
+    });
+
+    notification.onclick = () => {
+      window.focus();
     };
-
-    scheduleNext();
   }
 };
 
-const stopAudio = () => {
-  if (audioContext) {
-    audioContext.suspend();
-    audioContext = null;
-  }
-};
+// const loadAudio = async () => {
+//   if (!audioContext) {
+//     audioContext = new (window.AudioContext || window.webkitAudioContext)();
+//   }
+//   const response = await fetch(rainSound);
+//   const arrayBuffer = await response.arrayBuffer();
+//   audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+// };
+
+// const startAudio = () => {
+//   if (currentMode.value !== "rest") {
+//     if (!audioContext) {
+//       audioContext = new (window.AudioContext || window.webkitAudioContext)();
+//     }
+//     nextStartTime = audioContext.currentTime;
+
+//     const scheduleNext = () => {
+//       if (!isRunning.value) return;
+
+//       const source = audioContext.createBufferSource();
+//       source.buffer = audioBuffer;
+//       source.connect(audioContext.destination);
+
+//       source.start(nextStartTime);
+//       nextStartTime += audioBuffer.duration - overlapTime;
+
+//       setTimeout(scheduleNext, (audioBuffer.duration - overlapTime) * 1000);
+//     };
+
+//     scheduleNext();
+//   }
+// };
+
+// const stopAudio = () => {
+//   if (audioContext) {
+//     audioContext.suspend();
+//     audioContext = null;
+//   }
+// };
 
 const formattedTime = computed(() => {
   const minutes = Math.floor(time.value / 60)
@@ -103,6 +148,9 @@ const toggleTimer = () => {
 const startTimer = () => {
   isRunning.value = true;
   updateBackgroundColor();
+  if (notificationPermission.value === "default") {
+    setupNotifications();
+  }
   // startAudio();
   interval = setInterval(() => {
     if (time.value > 0) {
@@ -113,6 +161,7 @@ const startTimer = () => {
       }
       endAudio.volume = 0.2;
       endAudio.play();
+      sendNotification();
       switchMode();
     }
   }, 1000);
@@ -159,7 +208,12 @@ onBeforeUnmount(() => {
 });
 
 onMounted(() => {
-  loadAudio();
+  // loadAudio();
+  setupNotifications();
+});
+
+watch(notificationsEnabled, (newValue) => {
+  localStorage.setItem("notificationsEnabled", newValue);
 });
 </script>
 
